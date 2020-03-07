@@ -1,0 +1,24 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon start server.js"
+  },
+  "author": "sigdelbjay",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongodb": "^3.3.2",
+    "request": "^2.88.0",
+    "synonyms": "^1.0.1",
+    "thesaurus-com": "^1.2.3",
+    "wikibase-sdk": "^7.1.4",
+    "wordpos": "^1.2.0"
+  }
+}
