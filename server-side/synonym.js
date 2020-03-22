@@ -1,12 +1,11 @@
 ((synonym) => {
     'use strict';
 
-    var tcom = require('thesaurus-com');
     var WordPOS = require('wordpos'),
-    wordpos = new WordPOS();
-    const conceptnet = require('./conceptnet');
-    const wordnet = require('./wordnet');
-    const synonymsLib = require('./synonyms-lib');
+    wordpos = new WordPOS(),
+    wordnet = require('./wordnet'),
+    diff = require('diff'),
+    _ = require('lodash');
 
 
     synonym.init = (app, req, res) => {
@@ -23,40 +22,75 @@
             return replaceString;
         };
 
-        async function getSynonym(item) {
-            let tempArray;
-            const conceptNetData =  await conceptnet.init(item);
-            const wordNetData =  await wordnet.init(item);
-            const synonymsLibData = await synonymsLib.init(item);
-            tempArray = [...conceptNetData, ...wordNetData, ...synonymsLibData];
-            if(!(tempArray && tempArray.length)) return;
+        // function for getting context aware synonym
+        async function getSynonym(entities) {
+            let diffArr;
+            let synonymObj = {};
+            const wordNetData =  await wordnet.init(entities);
+            console.log("wordnetdata", wordNetData[1]);
+            for(let glosses in wordNetData[0]) {
+                // console.log("------gloss entity----------------------------------------------", glosses);
+                for(let gloss of wordNetData[0][glosses]){
+                    // if an entity has only one meaning/sense/gloss means it is already context-aware
+                    // so, no need for comparison
+                    if(gloss.length == 1) {
+                        synonymObj[glosses] = gloss;
+                        break;
+                    }
+                    for (let entity in wordNetData[1]){
+                        // comparing gloss of one entity only with the senses of other entity
+                        if(entity === glosses) continue;
+                        // console.log("------syn entity--------------------------------------------", entity);
+                        for(let prop of wordNetData[1][entity]){
+                            for(let syn of prop.synonyms) {
+                                diffArr = await diff.diffWords(gloss, syn);
 
-            let y = {};
-            y['word'] = item;
-            y['synonyms'] = [tempArray[0]];
-
-            // removing duplicate synonyms
-            for(let i=1; i<tempArray.length; i++) {
-                // check if two synonym word are same
-                let index = y.synonyms.findIndex(item => item.synWord === tempArray[i].synWord);                               
-                if(index === -1) {
-                    // two synonym words are different so keep it
-                    y.synonyms.push(tempArray[i]);
-                } else{
-                    //synonym words are same so check for source
-                    //if source are same keep only one, if source are diff update the source
-
-                    if(!y.synonyms[index].source.some(item => tempArray[i].source.includes(item))) {
-                        y.synonyms[index].source = [...y.synonyms[index].source, ...tempArray[i].source]
-                        if(!y.synonyms[index].context && tempArray[i].context)
-                            y.synonyms[index].context = tempArray[i].context
-                        
+                                // length 3 in diff module comparison result means there is a overlap
+                                if(diffArr.length === 3) {
+                                    // if one sense of a word in a question is connected to sense of another word
+                                    // in the same question, then it gives the sense of both word
+                                    // for one word we already have sense, for another word we have gloss and we will employ gloss its sense
+                                    synonymObj[glosses] = gloss;                                    
+                                    if(!synonymObj[entity]) synonymObj[entity] = prop.synonyms; 
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
-            return y;
-        }
 
+            // finding synonym using gloss
+            let synonymObjKeys = Object.keys(synonymObj);
+            if(synonymObj && synonymObjKeys.length) {
+                for(let item in synonymObj) {
+                    // if sense of an entity is still in gloss form it is in string(not Array)
+                    // we are finding associate synonym of gloss, i.e. an Array
+                    if(!Array.isArray(synonymObj[item])){
+                        for (let entity in wordNetData[1]){
+                            for(let prop of wordNetData[1][entity]){
+                                if(prop.gloss === synonymObj[item]) {
+                                    synonymObj[item] = prop.synonyms
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // if there is no overlap (between the gloss of one word and senses of other word)
+            // we assign the first sense as the best sense to all such words
+            let uncapturedEntities = _.xor(entities, synonymObjKeys);
+            for (let entity in wordNetData[1]){
+                if(!uncapturedEntities.includes(entity)) continue;
+                synonymObj[entity] = wordNetData[1][entity][0].synonyms;
+                
+                //wordnet sometimes gives number as synonym, to remove such numbers
+                synonymObj[entity] = synonymObj[entity].filter(x => isNaN(x));
+            }
+            return [synonymObj, wordNetData[1]];
+        }
 
         function main() {
             let x = {};
@@ -64,69 +98,39 @@
             question = req.body.question;
             console.log("question is: ", question);
             wordpos.getNouns(question)
-                    .then(async(result) => {
-                        console.log("entities", result)
-                        entities = result;
-                        
-                        for(let item of result) {
-                            let response;
-                            response = await app.locals.db.collection('Synonym')
-                                .find({word: item}).toArray();
-                            console.log("response from database---------------", response[0])
-                            response = response[0];
-                            if(!response) {
-                                // console.log("1")
-                                response = await getSynonym(item);
-                                if(!response) continue;
-                                app.locals.db.collection('Synonym', function (err, collection) {
-
-                                    collection.insert(response);
-
-                                });
-                            }
-
-                            let returnData = response.synonyms.find((element) => element.source.includes('SynonymsLib'))
-                            if(returnData) x[item] = returnData.synWord; 
-
-                        }
-                        var find,replace = [];
-                        find = Object.keys(x);
-                        replace = Object.values(x);
-                        newQuestion = question.replaceArray(find, replace);
-                        res.status(200).json({
-                            question,
-                            entities,
-                            newQuestion
-                        });
-                        console.log("New Question is: ", newQuestion);
-
-                        
+                .then(async(result) => {
+                    if(!result && !result.length) res.status(400);
+                    //omit proper noun
+                    entities = result.filter((item) => !(/^[A-Z]/.test(item)));
+                    let response = await getSynonym(entities);
+                    let synonymObj = response[0];
                     
-                        // let index;
-                        // for(let item in x) {
-                        //     x[item] = [];
-                        //     console.log("item", x[item])
-                        //     console.log("orgi item", item)
-                        //     for(let value in x[item]) {
-                        //         console.log("value", x[item][value])
-                        //         if(x[item][value] == item ) {
-                        //             x[item].splice(x[item].indexOf(x[item][value]), 1);
-                        //         }                            
-                        //     }
-                        //     for(let value in x[item]) {
-                        //         if(x[item][value].length == 1) {
-                        //             x[item].splice(x[item].indexOf(x[item][value]), 1);
-                        //         }
-                        //     }
-                        //     if(x[item].length == 0) {
-                        //         delete x[item]
-                        //     }
-                        // }
-    
-    
-                    })
-        }
+                    let find = [], replace = [];
+                    for(let values in synonymObj) {
+                        find.push(values);
+                        replace.push(synonymObj[values]);
+                    }
 
+                    // function for getting cartesian product of arrays
+                    const f = (a, b) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
+                    const cartesian = (a, b, ...c) => (b ? cartesian(f(a, b), ...c) : a);
+
+                    let replaceCombination = cartesian(...replace);
+                    let newQuestions = [];
+                    for(let item of replaceCombination) {
+                        if(!Array.isArray(item)) item = [item]
+                        newQuestions.push(question.replaceArray(find, item));
+                    }
+                    res.status(200).json({
+                        question,
+                        entities,
+                        newQuestions,
+                        stats: response[1]
+                    });
+                    console.log("New Questions are: ", newQuestions);
+
+                })
+        }
     }
 
 })(module.exports);
