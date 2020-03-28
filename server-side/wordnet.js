@@ -62,8 +62,10 @@
         for(let entity of entities) {
             syn = [...syn, ...await findSynonym(entity)]
         }
-        let differentSyn = await compareWordnetConceptNet(syn, conceptNetData);
-        syn = [...syn, ...await addGloss(differentSyn)];
+        if(conceptNetData) {
+            let differentSyn = await compareWordnetConceptNet(syn, conceptNetData);
+            syn = [...syn, ...await addGloss(differentSyn)];
+        }
         return syn;
     }
 

@@ -10,6 +10,14 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="form-group">
+            <label>Please enter a paragraph</label>
+            <textarea class="form-control" v-model="post.paragraph"></textarea>
+          </div>
+        </div>
+      </div>
       <div class="row" v-if="post.newQuestions">
         <div class="col-md-8">
           <div class="form-group">
@@ -55,16 +63,16 @@
           <table class="table table-hover">
             <thead>
             <tr>
-              <th>item </th>
+              <th>entity </th>
               <th>synonyms </th>
               <th>gloss </th>
             </tr>
             </thead>
-            <tbody v-for="(value, propertyName) in post.stats" :key="value._id">
-                <tr v-for="value1 in value" :key="value1._id">
-                  <td>{{ propertyName }}</td>
-                  <td >{{ value1.synonyms }}</td>
-                  <td >{{ value1.gloss }}</td>
+            <tbody>
+                <tr v-for="item in post.stats" :key="item._id">
+                  <td>{{ item.entity }}</td>
+                  <td>{{ item.synonyms }}</td>
+                  <td>{{ item.gloss }}</td>
 
                 </tr>
             </tbody>
