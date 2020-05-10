@@ -21,7 +21,7 @@
     }
 
     // compares synonyms from conceptnet with synonyms from wordnet
-    // unique/extra synonyms from wordnet are saved
+    // unique/extra synonyms from conceptnet are saved
     function compareWordnetConceptNet(wordNetData, conceptNetData) {
         
         let difference = {};

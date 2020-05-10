@@ -3,29 +3,84 @@
     <h1>Paraphase Question</h1>
     <form @submit.prevent="paraphase">
       <div class="row">
-        <div class="col-md-8">
-          <div class="form-group">
-            <label>Please enter a question</label>
-            <input type="text" class="form-control" v-model="post.question">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="form-group">
             <label>Please enter a paragraph</label>
             <textarea class="form-control" v-model="post.paragraph"></textarea>
           </div>
         </div>
       </div>
-      <div class="row" v-if="post.newQuestions">
-        <div class="col-md-8">
+      <div class="row" v-if="!post.finalResult">
+        <div class="col-md-12">
           <div class="form-group">
-            <label>Entities:</label>
-            <input type="text" class="form-control" v-model="post.entities">
+            <label>Please enter array of questions from paragraph</label>
+            <textarea class="form-control" v-model="post.questionArr"></textarea>
+            <!-- <input type="text" class="form-control" v-model="post.questionArr"> -->
           </div>
         </div>
-      </div><br />
+      </div>
+
+      <div v-if="!post.finalResult" class="form-group">
+        <button class="btn btn-primary">Paraphase</button>
+      </div>
+    </form>
+
+    <div class="row btn-toolbar">
+      <div class="col-md-1" v-for="(item, index) in post.finalResult" :key="index">
+        <button class="btn btn-primary" style="margin" v-on:click= "updateIndex(index)">Question{{index+1}}</button>
+      </div>
+    </div>
+    <br>
+    <div class="row" v-if="post.finalResult ">
+      <div class="col-md-8">
+        <div class="form-group">
+          <h6 class="visible-md"><span class="badge badge-secondary">Question: </span>{{post.finalResult[index].question}}</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" v-if="post.finalResult">
+      <div class="col-md-8">
+        <div class="form-group">
+          <h6><span class="badge badge-secondary">Entities: </span>{{post.finalResult[index].entities}}</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" v-if="post.finalResult">
+      <div class="col-md-8">
+        <div class="form-group">
+          <span class="badge badge-secondary">New Questions:</span>
+          <div v-for="item in post.finalResult[index].newQuestions" :key="item._id">
+            <h6 class="visible-md">{{item}}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" v-if="post.finalResult">
+      <div class="col-md-8">
+        <span class="badge badge-secondary">Comparison Table</span>
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th>entity </th>
+            <th>synonyms </th>
+            <th>gloss </th>
+          </tr>
+          </thead>
+          <tbody>
+              <tr v-for="item in post.finalResult[index].stats" :key="item._id">
+                <td>{{ item.entity }}</td>
+                <td>{{ item.synonyms }}</td>
+                <td>{{ item.gloss }}</td>
+
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
         <!-- <div class="row">
         <div class="col-md-8">
           <div class="form-group">
@@ -34,7 +89,7 @@
           </div>
         </div>
         </div><br /> -->
-      <div v-if="post.newQuestions" class="row">
+      <!-- <div v-if="post.newQuestions" class="row">
         <div class="col-md-8">
           <table class="table table-hover">
             <thead>
@@ -49,13 +104,13 @@
             </tbody>
           </table>
         </div>
-      </div>
-      <div v-if="!post.newQuestions" class="form-group">
+      </div> -->
+      <!-- <div v-if="!post.newQuestions" class="form-group">
         <button class="btn btn-primary">Paraphase</button>
-      </div>
-      <div class="btn-toolbar" v-if="post.newQuestions">
+      </div> -->
+      <!-- <div class="btn-toolbar" v-if="post.newQuestions">
         <button class="btn btn-primary mr-1" v-on:click="clearFields(), seeComparison = false">Try New</button>
-        <button class="btn btn-primary" v-on:click="seeComparison = true">See Comparison</button>
+        <button class="btn btn-primary btn-sm" v-on:click="seeComparison = true">See Comparison</button>
       </div>
       <br/>
       <div v-if="seeComparison" class="row">
@@ -78,8 +133,7 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </form>
+      </div> -->
   </div>
 </template>
 
@@ -88,19 +142,25 @@
         data(){
         return {
           post:{},
-          seeComparison: false
+          seeComparison: false,
+          index: 0
+
         }
     },
     methods: {
       paraphase(){
         let uri = 'http://localhost:8090/paraphase';
         this.axios.post(uri, this.post).then((response) => {
+          console.log("new post", response.data);
           this.post = response.data;
+          console.log("paragraph", response.data.paragraph);
+          console.log("finalresult", response.data.finalResult);
+
         });
       },
 
-      clearFields(){
-        this.post = {};
+      updateIndex(index){
+        this.index = index;
       }
     }
   }
