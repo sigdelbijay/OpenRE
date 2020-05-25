@@ -45,11 +45,13 @@
             for(let item of differentSyn[prop]) {
                 await wordpos.lookupNoun(item)
                 .then((data)=> {
-                    syn.push({
-                        synonyms: [item],
-                        gloss: data[0].gloss,
-                        entity: prop
-                    })
+                    if(data.length) {
+                        syn.push({
+                            synonyms: [item],
+                            gloss: data[0].gloss,
+                            entity: prop
+                        })
+                    }
                 })
                 .catch((err) => console.log("err", err))
             }

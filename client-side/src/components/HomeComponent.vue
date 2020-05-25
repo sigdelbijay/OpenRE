@@ -1,29 +1,48 @@
 <template>
   <div>
     <h1>Paraphase Question</h1>
-    <form @submit.prevent="paraphase">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="form-group">
-            <label>Please enter a paragraph</label>
-            <textarea class="form-control" v-model="post.paragraph"></textarea>
+    <div class="row">
+      <div class="col-md-8">
+        <form @submit.prevent="paraphase">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Please enter a paragraph</label>
+                <textarea class="form-control" rows=5 v-model="post.paragraph"></textarea>
+              </div>
+            </div>
           </div>
+          <div class="row" v-if="!post.finalResult">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Please enter array of questions from paragraph</label>
+                <textarea class="form-control" v-model="post.questionArr"></textarea>
+              </div>
+            </div>
+          </div>
+          <div v-if="!post.finalResult" class="form-group">
+            <button class="btn btn-primary">Paraphase</button>
+          </div>
+        </form>
+      </div>
+      <div  class="col-md-1"></div>
+      <div class="col-md-3">
+        <div class="row">
+          <label>Enter SQUAD 2.0 JSON</label>
+          <textarea rows=5 v-model="json.old"></textarea>
+        </div>
+        <br>
+        <div class="row">
+          <button class="btn btn-secondary" v-on:click= "createNewJSON()">Create new JSON file</button>
+        </div>
+        OR
+        <br>
+        <div class="row">
+          <button class="btn btn-secondary" v-on:click= "downloadJSON()">Download new JSON file</button>
         </div>
       </div>
-      <div class="row" v-if="!post.finalResult">
-        <div class="col-md-12">
-          <div class="form-group">
-            <label>Please enter array of questions from paragraph</label>
-            <textarea class="form-control" v-model="post.questionArr"></textarea>
-            <!-- <input type="text" class="form-control" v-model="post.questionArr"> -->
-          </div>
-        </div>
-      </div>
-
-      <div v-if="!post.finalResult" class="form-group">
-        <button class="btn btn-primary">Paraphase</button>
-      </div>
-    </form>
+    </div>
+    
 
     <div class="row btn-toolbar">
       <div class="col-md-1" v-for="(item, index) in post.finalResult" :key="index">
@@ -138,14 +157,15 @@
 </template>
 
 <script>
-    export default {
-        data(){
-        return {
-          post:{},
-          seeComparison: false,
-          index: 0
+  export default {
+    data(){
+      return {
+        post:{},
+        json:{},
+        seeComparison: false,
+        index: 0
 
-        }
+      }
     },
     methods: {
       paraphase(){
@@ -161,6 +181,54 @@
 
       updateIndex(index){
         this.index = index;
+      },
+      createNewJSON() {
+        var uri = 'http://localhost:8090/createNewJson';
+        var config = {
+          responseType: 'blob'
+        };
+        console.log("data to be ")
+        this.axios.post(uri, this.json, config).then((response) => {
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement('a');
+
+          fileLink.href = fileURL;
+          fileLink.setAttribute('download', 'paraphased-dev-v2.0.json');
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
+        });
+
+        // this.axios({
+        //   url: 'http://localhost:8090/dwnldfile',
+        //   method: 'POST',
+        //   responseType: 'blob',
+        // }).then((response) => {
+        //   var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+        //   var fileLink = document.createElement('a');
+
+        //   fileLink.href = fileURL;
+        //   fileLink.setAttribute('download', 'paraphased-dev-v2.0.json');
+        //   document.body.appendChild(fileLink);
+
+        //   fileLink.click();
+        // });
+      },
+      downloadJSON() {
+        this.axios({
+          url: 'http://localhost:8090/dwnldfile',
+          method: 'POST',
+          responseType: 'blob',
+        }).then((response) => {
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement('a');
+
+          fileLink.href = fileURL;
+          fileLink.setAttribute('download', 'paraphased-dev-v2.0.json');
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
+        });
       }
     }
   }
