@@ -64,8 +64,6 @@
 
 
         // function main() {
-            // if(!req.body || !req.body.paragraph || !req.body.questionArr) return res.status(400).send("Invalid parameters");
-            // TODO: CHECK FOR APP.LOCALS AS WELL
             let paragraph = (req && req.body) ? req.body.paragraph : app.locals.paragraph;
             let questionArr = (req && req.body) ? JSON.parse(req.body.questionArr) : app.locals.questionArr;
             let finalResult;
@@ -75,9 +73,9 @@
             for(let i=0; i<questionArr.length; i++) {
                 console.log("question", questionArr[i]);
                 if(req && req.body) {
+                    console.log("-------------******************----------------------")
                     wordpos.getNouns(questionArr[i])
                     .then(async(result) => {
-                        // if(!result && !result.length) res.status(400);
                         //omit proper noun
                         let entities = result.filter((item) => !(/^[A-Z]/.test(item)));
                         let response = await getSynonym(entities, paragraph);
@@ -89,6 +87,8 @@
                             synonymObj[values] = synonymObj[values].filter(x => isNaN(x));
                             //filter if synonyms have original word
                             if(synonymObj[values].length > 1) synonymObj[values] = synonymObj[values].filter(x => x !== values);
+                            //remove underscore between words
+                            synonymObj[values] = synonymObj[values].map(x => x.replace(/_/, ' '));
                             find.push(values);
                             replace.push(synonymObj[values]);
                         }
@@ -118,6 +118,7 @@
                         }
                     });
                 } else {
+                    console.log("-------------#################----------------------")
                     return await wordpos.getNouns(questionArr[i])
                     .then(async(result) => {
                         // if(!result && !result.length) res.status(400);

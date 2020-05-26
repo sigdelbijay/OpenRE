@@ -24,81 +24,84 @@
             <button class="btn btn-primary">Paraphase</button>
           </div>
         </form>
+
+        <div class="row col-md-12 btn-toolbar" v-if="post.finalResult">
+          <button class="btn btn-success mr-1" style="margin" v-on:click= "newParaphase()">New Paraphase</button>
+          <div v-for="(item, index) in post.finalResult" :key="index">
+            <button class="btn btn-primary mr-1 " style="margin" v-on:click= "updateIndex(index)">Question{{index+1}}</button>
+          </div>
+        </div>
+        <br>
+        <div class="row" v-if="post.finalResult ">
+          <div class="col-md-12">
+            <div class="form-group">
+              <h6 class="visible-md"><span class="badge badge-secondary">Question:</span>{{post.finalResult[index].question}}</h6>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" v-if="post.finalResult">
+          <div class="col-md-12">
+            <div class="form-group">
+              <h6><span class="badge badge-secondary">Entities: </span>{{post.finalResult[index].entities}}</h6>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" v-if="post.finalResult">
+          <div class="col-md-12">
+            <div class="form-group">
+              <span class="badge badge-secondary">New Questions:</span>
+              <div v-for="item in post.finalResult[index].newQuestions" :key="item._id">
+                <h6 class="visible-md">{{item}}</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" v-if="post.finalResult">
+          <div class="col-md-12">
+            <span class="badge badge-secondary">Comparison Table</span>
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>entity </th>
+                <th>synonyms </th>
+                <th>gloss </th>
+              </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="item in post.finalResult[index].stats" :key="item._id">
+                    <td>{{ item.entity }}</td>
+                    <td>{{ item.synonyms }}</td>
+                    <td>{{ item.gloss }}</td>
+
+                  </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       <div  class="col-md-1"></div>
       <div class="col-md-3">
-        <div class="row">
+        <div class="row ">
           <label>Enter SQUAD 2.0 JSON</label>
-          <textarea rows=5 v-model="json.old"></textarea>
+          <textarea class = "col-md-12" rows=5 v-model="json.old"></textarea>
         </div>
         <br>
         <div class="row">
-          <button class="btn btn-secondary" v-on:click= "createNewJSON()">Create new JSON file</button>
+          <button class="col-md-12 btn btn-success" v-on:click= "createNewJSON()">Create new JSON file</button>
         </div>
         OR
         <br>
         <div class="row">
-          <button class="btn btn-secondary" v-on:click= "downloadJSON()">Download new JSON file</button>
+          <button class="col-md-12 btn btn-success" v-on:click= "downloadJSON()">Download paraphased JSON file</button>
         </div>
       </div>
     </div>
     
 
-    <div class="row btn-toolbar">
-      <div class="col-md-1" v-for="(item, index) in post.finalResult" :key="index">
-        <button class="btn btn-primary" style="margin" v-on:click= "updateIndex(index)">Question{{index+1}}</button>
-      </div>
-    </div>
-    <br>
-    <div class="row" v-if="post.finalResult ">
-      <div class="col-md-8">
-        <div class="form-group">
-          <h6 class="visible-md"><span class="badge badge-secondary">Question: </span>{{post.finalResult[index].question}}</h6>
-        </div>
-      </div>
-    </div>
 
-    <div class="row" v-if="post.finalResult">
-      <div class="col-md-8">
-        <div class="form-group">
-          <h6><span class="badge badge-secondary">Entities: </span>{{post.finalResult[index].entities}}</h6>
-        </div>
-      </div>
-    </div>
-
-    <div class="row" v-if="post.finalResult">
-      <div class="col-md-8">
-        <div class="form-group">
-          <span class="badge badge-secondary">New Questions:</span>
-          <div v-for="item in post.finalResult[index].newQuestions" :key="item._id">
-            <h6 class="visible-md">{{item}}</h6>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row" v-if="post.finalResult">
-      <div class="col-md-8">
-        <span class="badge badge-secondary">Comparison Table</span>
-        <table class="table table-hover">
-          <thead>
-          <tr>
-            <th>entity </th>
-            <th>synonyms </th>
-            <th>gloss </th>
-          </tr>
-          </thead>
-          <tbody>
-              <tr v-for="item in post.finalResult[index].stats" :key="item._id">
-                <td>{{ item.entity }}</td>
-                <td>{{ item.synonyms }}</td>
-                <td>{{ item.gloss }}</td>
-
-              </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
         <!-- <div class="row">
         <div class="col-md-8">
@@ -162,7 +165,7 @@
       return {
         post:{},
         json:{},
-        seeComparison: false,
+        // seeComparison: false,
         index: 0
 
       }
@@ -229,6 +232,9 @@
 
           fileLink.click();
         });
+      },
+      newParaphase() {
+        this.post = {};
       }
     }
   }
