@@ -1,16 +1,8 @@
 # OpenRE
 
-## Getting Started
-
-This test application is solely for experimental purpose. Running the application will create a synonym database. It takes questionnaires from SQUAD 2.0 dataset articles. It then takes entities from those questions, develops their synonyms, and creates new questionnaires based on those synonyms. It also ranks the synonyms based on their occurences in different sources.
-
-This application develops relationsip between two entities.
-
-Its still under development.
-
 ### Prerequisites
 
-You must have Node.js installed in your machine.
+You must have Node.js and npm installed in your machine.
 
 ### Installing
 
