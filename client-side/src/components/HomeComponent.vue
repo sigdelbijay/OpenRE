@@ -172,7 +172,8 @@
     },
     methods: {
       paraphase(){
-        let uri = 'http://localhost:8090/paraphase';
+        let uri = 'http://54.253.98.145:8090/paraphase';
+        // let uri = 'http://localhost:8090/paraphase';
         this.axios.post(uri, this.post).then((response) => {
           console.log("new post", response.data);
           this.post = response.data;
@@ -186,7 +187,8 @@
         this.index = index;
       },
       createNewJSON() {
-        var uri = 'http://localhost:8090/createNewJson';
+        var uri = 'http://54.253.98.145:8090/createNewJson';
+        // var uri = 'http://localhost:8090/createNewJson';
         var config = {
           responseType: 'blob'
         };
@@ -219,7 +221,8 @@
       },
       downloadJSON() {
         this.axios({
-          url: 'http://localhost:8090/dwnldfile',
+          url: 'http://54.253.98.145:8090/dwnldfile',
+          // url: 'http://localhost:8090/dwnldfile',
           method: 'POST',
           responseType: 'blob',
         }).then((response) => {
