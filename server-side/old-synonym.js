@@ -1,3 +1,4 @@
+//not in use
 ((synonym) => {
     'use strict';
 

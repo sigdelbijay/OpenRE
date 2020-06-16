@@ -1,3 +1,4 @@
+//not in use
 ((relation) => {
     'use strict';
 
@@ -76,7 +77,6 @@
         function main() {
             // See the order of promises. Final result will be according to it
             Promise.all([promise1]).then((data) => {
-                console.log('-------------------------------------------');
                 data1 = JSON.parse(data).edges;
                 let arr1 = [];
                 for(let i=0; i<data1.length; i++) {

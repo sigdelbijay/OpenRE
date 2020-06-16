@@ -5,12 +5,12 @@ const bodyParser = require('body-parser');
 const app = express();
 const router = express.Router();
 
-const dbConnector = require('./database-connector');
+// const dbConnector = require('./database-connector');
 // const relation = require('./realtionship');
 const synonym = require('./synonym');
 const createNewJson = require('./create-new-json');
 
-dbConnector.init(app);
+// dbConnector.init(app);
 // relation.init(app);
 
 app.use(cors());

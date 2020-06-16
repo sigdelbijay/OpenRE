@@ -10,7 +10,7 @@ Its still under development.
 
 ### Prerequisites
 
-You must have Node.js and MongoDB installed in your machine.
+You must have Node.js installed in your machine.
 
 ### Installing
 
