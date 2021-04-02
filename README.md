@@ -1,6 +1,7 @@
 # OpenRE
 
 Open Relation Extraction(OpenRE) is an application built for the thesis work  on Testing QA Systems’ ability in Processing Synonym Commonsense Knowledge. The research paper is published in IEEE https://www.computer.org/csdl/proceedings-article/iv/2020/913400a317/1rSRdTZBoNW
+
 OpenRE application takes SQUAD 2.0 Dataset and creates new SQUAD 2.0 Dataset with paraphrased questionnaires. It either takes an article paragraph text and array of questions (["question a", "question b"]) from SQUAD 2.0 Dataset and creates new questionnaire or it takes whole/part of SQUAD 2.0 Dataset and regenerates the whole dataset. As the regeneration of whole dataset takes hours to finish, there is option to download already created new SQUAD 2.0 Dataset which has been created using this application.
 
 ## Demo
